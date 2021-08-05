@@ -2,7 +2,8 @@ from django.db import models
 
 # Create your models here.
 from django.contrib.auth.models import (
-    BaseUserManager, AbstractBaseUser
+    BaseUserManager,
+    AbstractBaseUser
 )
 
 
@@ -17,8 +18,8 @@ class MyUserManager(BaseUserManager):
 
         user = self.model(
             email=self.normalize_email(email),
-            first_name=first_name,
-            last_name=last_name,
+            first_name=first_name.capitalize(),
+            last_name=last_name.upper(),
         )
 
         user.set_password(password)
@@ -60,25 +61,25 @@ class MyUser(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['date_of_birth', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'password']
 
     def __str__(self):
-        return f"{self.first_name.capitalize()} {self.last_name.upper()}"
+        return f"{self.first_name} {self.last_name}"
 
-    # def has_perm(self, perm, obj=None):
-    #     "Does the user have a specific permission?"
-    #     # Simplest possible answer: Yes, always
-    #     return True
-    #
-    # def has_module_perms(self, app_label):
-    #     "Does the user have permissions to view the app `app_label`?"
-    #     # Simplest possible answer: Yes, always
-    #     return True
+    def has_perm(self, perm, obj=None):
+        """Does the user have a specific permission?"""
+        # Simplest possible answer: Yes, always
+        return True
 
-    # @property
-    # def is_staff(self):
-    #     # Simplest possible answer: All admins are staff
-    #     return self.is_admin
+    def has_module_perms(self, app_label):
+        """Does the user have permissions to view the app `app_label`?"""
+        # Simplest possible answer: Yes, always
+        return True
+
+    @property
+    def is_staff(self):
+        # Simplest possible answer: All admins are staff
+        return self.is_admin
 
 
 class Contributor(models.Model):
