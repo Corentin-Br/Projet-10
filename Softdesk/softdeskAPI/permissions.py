@@ -19,7 +19,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.author_id == request.user
+        return obj.author == request.user
 
 
 class HasCreatedProjectOrReadOnly(permissions.BasePermission):
@@ -30,19 +30,8 @@ class HasCreatedProjectOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
-        contributor = Contributor.objects.get(user_id=request.user, project_id=get_project(view))
+        contributor = Contributor.objects.get(user=request.user, project=get_project(view))
         return contributor.role == "author"
-
-
-# class IsProjectCreatorOrReadOnly(permissions.BasePermission):
-#     """
-#     Custom permission to only allow authors of a project to edit or delete it.
-#     """
-#
-#     def has_object_permission(self, request, view, obj):
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-#         return obj.role == "author"
 
 
 class IsContributor(permissions.BasePermission):
@@ -50,4 +39,4 @@ class IsContributor(permissions.BasePermission):
     Custom permission to only allow contributors of a project to see it.
     """
     def has_permission(self, request, view):
-        return Contributor.objects.filter(user_id=request.user, project_id=get_project(view)).exists()
+        return Contributor.objects.filter(user=request.user, project=get_project(view)).exists()
