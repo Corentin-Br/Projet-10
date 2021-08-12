@@ -13,8 +13,8 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['email', 'first_name', 'last_name', 'password', 'issues_written_id', 'comments_written_id',
-                  'contributors_id']
+        fields = ['email', 'first_name', 'last_name', 'password', 'issues_written', 'comments_written',
+                  'contributors']
 
     def create(self, validated_data):
         return MyUser.objects.create_user(**validated_data)
@@ -26,15 +26,15 @@ class IssueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ['title', 'desc', 'tag', 'priority', 'status', 'project_id', 'author_id', 'assignee_id',
-                  'created_time', 'comments_id']
+        fields = ['title', 'desc', 'tag', 'priority', 'status', 'project', 'author', 'assignee',
+                  'created_time', 'comments']
 
 
 class ContributorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contributor
-        fields = ['user_id', 'project_id', 'permission', 'role']
+        fields = ['user_id', 'project_id', 'role']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -45,11 +45,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['title', 'description', 'type', 'contributors_id', 'issues_id']
+        fields = ['title', 'description', 'type', 'contributors', 'issues']
 
 
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['description', 'author_id', 'issue_id', 'created_time']
+        fields = ['description', 'author', 'issue', 'created_time']
