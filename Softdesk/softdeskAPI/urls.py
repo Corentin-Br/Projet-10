@@ -1,5 +1,5 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .views import CreateUserAPIView, ProjectViewSet, ProjectDetailViewSet, ProjectContributorsViewSet, \
     RemoveContributorAPIView, ProjectIssuesViewSet, ProjectIssuesUpdateAndDeleteViewSet, ProjectIssueCommentsViewSet, \
@@ -53,5 +53,4 @@ urlpatterns = [
     path('projects/<int:project_pk>/issues/<int:issue_pk>/comments/<int:pk>', project_issue_comments_details,
          name="comments_details"),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
