@@ -53,5 +53,5 @@ urlpatterns = [
     path('projects/<int:project_pk>/issues/<int:issue_pk>/comments/<int:pk>', project_issue_comments_details,
          name="comments_details"),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
