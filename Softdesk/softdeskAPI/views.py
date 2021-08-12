@@ -19,19 +19,19 @@ class CreateUserAPIView(CreateAPIView):
 class ProjectViewSet(ListModelMixin,
                      CreateModelMixin,
                      GenericViewSet):
-    # permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
     serializer_class = ProjectSerializer
 
     def get_queryset(self, **kwargs):
-        return [contributor.project_id for contributor in self.request.user.contributors_id.all()]
+        return [contributor.project for contributor in self.request.user.contributors.all()]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         contributor = ContributorSerializer(data={
-            'user_id': request.user.id,
-            'project_id': Project.objects.all().last().id,
+            'user': request.user.id,
+            'project': Project.objects.all().last().id,
             'permission': "perm",  # Placeholder
             'role': "author"
         })
@@ -46,7 +46,7 @@ class ProjectDetailViewSet(RetrieveModelMixin,
                            DestroyModelMixin,
                            GenericViewSet):
 
-    permission_classes = [IsContributor, HasCreatedProjectOrReadOnly]  # IsAuthenticated,
+    permission_classes = [IsAuthenticated, IsContributor, HasCreatedProjectOrReadOnly]  # IsAuthenticated,
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
@@ -56,15 +56,16 @@ class ProjectContributorsViewSet(ListModelMixin,
                                  DestroyModelMixin,
                                  GenericViewSet):
 
-    permission_classes = [IsContributor, HasCreatedProjectOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, HasCreatedProjectOrReadOnly]
     serializer_class = ContributorSerializer
 
     def get_queryset(self):
-        return get_project(self).contributors_id
+        return get_project(self).contributors
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data["project_id"] = Project.objects.get(pk=self.kwargs["pk"]).id
+        data["project"] = Project.objects.get(pk=self.kwargs["pk"]).id
+        data["role"] = data.get("role", "contributor")
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -73,26 +74,26 @@ class ProjectContributorsViewSet(ListModelMixin,
 
 
 class RemoveContributorAPIView(DestroyAPIView):
-    permission_classes = [IsContributor, HasCreatedProjectOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, HasCreatedProjectOrReadOnly]
 
     def get_queryset(self):
-        return get_project(self).contributors_id
+        return get_project(self).contributors
 
 
 class ProjectIssuesViewSet(ListModelMixin,
                            CreateModelMixin,
                            GenericViewSet):
-    permission_classes = [IsContributor, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, IsAuthorOrReadOnly]
     serializer_class = IssueSerializer
 
     def get_queryset(self):
-        return get_project(self).issues_id
+        return get_project(self).issues
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data["project_id"] = Project.objects.get(pk=self.kwargs["project_pk"]).id
-        data["author_id"] = request.user.id
-        data["assignee_id"] = data.get("assignee_id", request.user.id)
+        data["project"] = Project.objects.get(pk=self.kwargs["project_pk"]).id
+        data["author"] = request.user.id
+        data["assignee"] = data.get("assignee", request.user.id)
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -103,26 +104,44 @@ class ProjectIssuesViewSet(ListModelMixin,
 class ProjectIssuesUpdateAndDeleteViewSet(UpdateModelMixin,
                                           DestroyModelMixin,
                                           GenericViewSet):
-    permission_classes = [IsContributor, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, IsAuthorOrReadOnly]
     serializer_class = IssueSerializer
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy()
+        data["project"] = instance.project.id
+        data["author"] = instance.author.id
+        data["assignee"] = data.get("assignee", instance.assignee).id
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
     def get_queryset(self, **kwargs):
-        return get_project(self).issues_id
+        return get_project(self).issues
 
 
 class ProjectIssueCommentsViewSet(CreateModelMixin,
                                   ListModelMixin,
                                   GenericViewSet):
-    permission_classes = [IsContributor, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, IsAuthorOrReadOnly]
     serializer_class = CommentSerializer
 
     def get_queryset(self, **kwargs):
-        return get_object_or_404(Issue, pk=self.kwargs["pk"]).comments_id
+        return get_object_or_404(Issue, pk=self.kwargs["pk"]).comments
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data["issue_id"] = Issue.objects.get(pk=self.kwargs["pk"]).id
-        data["author_id"] = request.user.id
+        data["issue"] = Issue.objects.get(pk=self.kwargs["pk"]).id
+        data["author"] = request.user.id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -134,8 +153,25 @@ class ProjectIssueCommentsDetailsViewSet(UpdateModelMixin,
                                          DestroyModelMixin,
                                          RetrieveModelMixin,
                                          GenericViewSet):
-    permission_classes = [IsContributor, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthenticated, IsContributor, IsAuthorOrReadOnly]
     serializer_class = CommentSerializer
 
     def get_queryset(self, **kwargs):
-        return get_object_or_404(Issue, pk=self.kwargs["issue_pk"]).comments_id
+        return get_object_or_404(Issue, pk=self.kwargs["issue_pk"]).comments
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy()
+        data["issue"] = instance.issue.id
+        data["author"] = instance.author.id
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
