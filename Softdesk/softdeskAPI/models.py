@@ -63,32 +63,12 @@ class MyUser(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'password']
 
-    # def __str__(self):
-    #     return f"{self.first_name} {self.last_name}"
-    #
-    # def has_perm(self, perm, obj=None):
-    #     """Does the user have a specific permission?"""
-    #     # Simplest possible answer: Yes, always
-    #     return True
-    #
-    # def has_module_perms(self, app_label):
-    #     """Does the user have permissions to view the app `app_label`?"""
-    #     # Simplest possible answer: Yes, always
-    #     return True
-    #
-    # @property
-    # def is_staff(self):
-    #     # Simplest possible answer: All admins are staff
-    #     return self.is_admin
-
 
 class Contributor(models.Model):
-    permissions_choices = [["perm", "permission_1"], ["not_perm", "permission_2"]]  # Placeholder
 
     user_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='contributors_id')
     project_id = models.ForeignKey(to='Project', on_delete=models.CASCADE, related_name='contributors_id')
-    permission = models.CharField(choices=permissions_choices, max_length=50)
-    role = models.CharField(max_length=30)  # Placeholder
+    role = models.CharField(max_length=30)
 
     class Meta:
         unique_together = ('user_id', 'project_id')
