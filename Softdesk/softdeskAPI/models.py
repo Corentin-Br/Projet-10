@@ -66,12 +66,12 @@ class MyUser(AbstractBaseUser):
 
 class Contributor(models.Model):
 
-    user_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='contributors_id')
-    project_id = models.ForeignKey(to='Project', on_delete=models.CASCADE, related_name='contributors_id')
+    user = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='contributors')
+    project = models.ForeignKey(to='Project', on_delete=models.CASCADE, related_name='contributors')
     role = models.CharField(max_length=30)
 
     class Meta:
-        unique_together = ('user_id', 'project_id')
+        unique_together = ('user', 'project')
 
 
 class Project(models.Model):
@@ -85,15 +85,15 @@ class Issue(models.Model):
     desc = models.CharField(max_length=255)
     tag = models.CharField(max_length=30)
     priority = models.CharField(max_length=30)
-    project_id = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='issues_id')
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='issues')
     status = models.CharField(max_length=30)
-    author_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_written_id')
-    assignee_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_assigned_id')
+    author = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_written')
+    assignee = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_assigned')
     created_time = models.DateTimeField(auto_now=True)
 
 
 class Comment(models.Model):
     description = models.CharField(max_length=255)
-    author_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='comments_written_id')
-    issue_id = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name='comments_id')
+    author = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='comments_written')
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name='comments')
     created_time = models.DateTimeField(auto_now=True)
