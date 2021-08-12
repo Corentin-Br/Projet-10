@@ -63,32 +63,35 @@ class MyUser(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'password']
 
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-    def has_perm(self, perm, obj=None):
-        """Does the user have a specific permission?"""
-        # Simplest possible answer: Yes, always
-        return True
-
-    def has_module_perms(self, app_label):
-        """Does the user have permissions to view the app `app_label`?"""
-        # Simplest possible answer: Yes, always
-        return True
-
-    @property
-    def is_staff(self):
-        # Simplest possible answer: All admins are staff
-        return self.is_admin
+    # def __str__(self):
+    #     return f"{self.first_name} {self.last_name}"
+    #
+    # def has_perm(self, perm, obj=None):
+    #     """Does the user have a specific permission?"""
+    #     # Simplest possible answer: Yes, always
+    #     return True
+    #
+    # def has_module_perms(self, app_label):
+    #     """Does the user have permissions to view the app `app_label`?"""
+    #     # Simplest possible answer: Yes, always
+    #     return True
+    #
+    # @property
+    # def is_staff(self):
+    #     # Simplest possible answer: All admins are staff
+    #     return self.is_admin
 
 
 class Contributor(models.Model):
     permissions_choices = [["perm", "permission_1"], ["not_perm", "permission_2"]]  # Placeholder
 
-    user = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='contributors')
-    project = models.ForeignKey(to='Project', on_delete=models.CASCADE, related_name='contributors')
+    user_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='contributors_id')
+    project_id = models.ForeignKey(to='Project', on_delete=models.CASCADE, related_name='contributors_id')
     permission = models.CharField(choices=permissions_choices, max_length=50)
     role = models.CharField(max_length=30)  # Placeholder
+
+    class Meta:
+        unique_together = ('user_id', 'project_id')
 
 
 class Project(models.Model):
@@ -102,14 +105,15 @@ class Issue(models.Model):
     desc = models.CharField(max_length=255)
     tag = models.CharField(max_length=30)
     priority = models.CharField(max_length=30)
-    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='issues')
-    author = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_written')
-    assignee = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_assigned')
+    project_id = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='issues_id')
+    status = models.CharField(max_length=30)
+    author_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_written_id')
+    assignee_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='issues_assigned_id')
     created_time = models.DateTimeField(auto_now=True)
 
 
 class Comment(models.Model):
     description = models.CharField(max_length=255)
-    author = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='comments_written')
-    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name='comments')
+    author_id = models.ForeignKey(to=MyUser, on_delete=models.CASCADE, related_name='comments_written_id')
+    issue_id = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name='comments_id')
     created_time = models.DateTimeField(auto_now=True)
