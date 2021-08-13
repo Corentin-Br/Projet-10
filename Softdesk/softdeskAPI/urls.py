@@ -13,6 +13,7 @@ projects = ProjectViewSet.as_view({
 project_details = ProjectDetailViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',
+    'patch': 'partial_update',
     'delete': 'destroy'
 })
 
@@ -28,6 +29,7 @@ project_issues = ProjectIssuesViewSet.as_view({
 
 project_issues_change = ProjectIssuesUpdateAndDeleteViewSet.as_view({
     'put': 'update',
+    'patch': 'partial_update',
     'delete': 'destroy'
 })
 project_issue_comments = ProjectIssueCommentsViewSet.as_view({
@@ -36,6 +38,7 @@ project_issue_comments = ProjectIssueCommentsViewSet.as_view({
 })
 project_issue_comments_details = ProjectIssueCommentsDetailsViewSet.as_view({
     'put': 'update',
+    'patch': 'partial_update',
     'delete': 'destroy',
     'get': 'retrieve'
 })
