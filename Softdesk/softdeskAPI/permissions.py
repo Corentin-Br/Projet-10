@@ -1,14 +1,12 @@
 from rest_framework import permissions
+from rest_framework.generics import get_object_or_404
 
 from .models import Contributor, Project
 
 
 def get_project(view):
-    if "project_pk" in view.kwargs:
-        project_pk = view.kwargs["project_pk"]
-    else:
-        project_pk = view.kwargs["pk"]
-    return Project.objects.get(pk=project_pk)
+    project_pk = view.kwargs["project_pk"] if "project_pk" in view.kwargs else view.kwargs["pk"]
+    return get_object_or_404(Project, pk=project_pk)
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
