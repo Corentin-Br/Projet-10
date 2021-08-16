@@ -3,10 +3,6 @@ from .models import MyUser, Issue, Project, Contributor, Comment
 
 
 class MyUserSerializer(serializers.ModelSerializer):
-    # issues_written = serializers.PrimaryKeyRelatedField(many=True, queryset=Issue.objects.all())
-    # comments_written = serializers.PrimaryKeyRelatedField(many=True, queryset=Comment.objects.all())
-    # contributors = serializers.PrimaryKeyRelatedField(many=True, queryset=Contributor.objects.all())
-
     issues_written = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     comments_written = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     contributors = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -21,7 +17,6 @@ class MyUserSerializer(serializers.ModelSerializer):
 
 
 class IssueSerializer(serializers.ModelSerializer):
-    # comments = serializers.PrimaryKeyRelatedField(many=True, queryset=Comment.objects.all())
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
@@ -38,8 +33,6 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    # contributors = serializers.PrimaryKeyRelatedField(many=True, queryset=Contributor.objects.all())
-    # issues = serializers.PrimaryKeyRelatedField(many=True, queryset=Issue.objects.all())
     contributors = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     issues= serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
