@@ -154,7 +154,7 @@ class ProjectIssueCommentsDetailsViewSet(UpdateModelMixin,
     serializer_class = CommentSerializer
 
     def get_queryset(self, **kwargs):
-        return Comment.objects.filter(issue=get_object_or_404(Issue, pk=self.kwargs["pk"]))
+        return Comment.objects.filter(issue=get_object_or_404(Issue, pk=self.kwargs["issue_pk"]))
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
